@@ -69,7 +69,7 @@ const double _kSlotW      = 37.0;
 const double _kSlotH      = 46.0;
 
 /// Left edge of the pill for each tab index
-const List<double> _kPillX = [6.0, 63.0, 137.0, 197.0, 272.0];
+const List<double> _kPillX = [3.0, 63.0, 137.0, 197.0, 272.0];
 
 /// Left edge of each slot for each tab index
 const List<double> _kSlotX = [17.0, 85.0, 152.0, 219.0, 286.0];
