@@ -1,56 +1,38 @@
 import 'package:flutter/material.dart';
 import 'bottom_nav_bar.dart';
 
-// ── Usage example ─────────────────────────────────────────────────────────────
-//
-//  Wrap your Scaffold body with a Stack and place PeopleFirstBottomNav
-//  at the bottom, 22px above the safe-area edge — matching the Figma spec.
-//
-//  pubspec.yaml dependencies needed:
-//    flutter:
-//      sdk: flutter
-//
-//  Add JioType font (already in /Font folder):
-//    flutter:
-//      fonts:
-//        - family: JioType
-//          fonts:
-//            - asset: Font/JioType-Medium.ttf
-//              weight: 500
-//            - asset: Font/JioType-Bold.ttf
-//              weight: 700
-//            - asset: Font/JioType-Black.ttf
-//              weight: 900
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+/// Minimal integration example — copy the relevant parts into your app.
+class PeopleFirstHomeScreen extends StatefulWidget {
+  const PeopleFirstHomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<PeopleFirstHomeScreen> createState() => _PeopleFirstHomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+class _PeopleFirstHomeScreenState extends State<PeopleFirstHomeScreen> {
+  int _activeTab = 0;
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final safeBottom = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
+      // No built-in bottomNavigationBar — we use a floating overlay instead.
       body: Stack(
         children: [
-          // ── Page content ────────────────────────────────────────────────
-          _buildPage(_currentIndex),
+          // ── Your page content ──────────────────────────────────────────────
+          _PageContent(index: _activeTab),
 
-          // ── Bottom nav ──────────────────────────────────────────────────
+          // ── Floating bottom nav ────────────────────────────────────────────
+          // 22 px above the safe-area edge, centred horizontally.
           Positioned(
-            bottom: 22 + bottomPadding,
-            left: 0,
-            right: 0,
+            bottom: 22 + safeBottom,
+            left:   0,
+            right:  0,
             child: Center(
               child: PeopleFirstBottomNav(
-                initialIndex: _currentIndex,
-                onTabChanged: (idx) => setState(() => _currentIndex = idx),
+                initialIndex: _activeTab,
+                onTabChanged: (idx) => setState(() => _activeTab = idx),
               ),
             ),
           ),
@@ -58,15 +40,30 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
 
-  Widget _buildPage(int index) {
-    const pages = ['Home', 'Attendance', 'Payroll', 'Reimburse', 'Menu'];
-    return Container(
+// ── Placeholder page bodies ────────────────────────────────────────────────────
+
+class _PageContent extends StatelessWidget {
+  final int index;
+  const _PageContent({required this.index});
+
+  static const _labels = [
+    'Home', 'Attendance', 'Payroll', 'Reimburse', 'Menu',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
       color: const Color(0xFFF2F4F7),
       child: Center(
         child: Text(
-          pages[index],
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+          _labels[index],
+          style: const TextStyle(
+            fontSize:   24,
+            fontWeight: FontWeight.w500,
+            fontFamily: 'JioType',
+          ),
         ),
       ),
     );
