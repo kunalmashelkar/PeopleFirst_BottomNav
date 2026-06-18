@@ -57,8 +57,9 @@ const List<NavTab> kPeopleFirstTabs = [
 const double _kNavWidth   = 344.0;
 const double _kNavHeight  = 62.0;
 const double _kNavRadius  = 80.0;
-const double _kPillW      = 78.0;
-const double _kPillH      = 50.0;
+// Per-tab pill widths — narrower for short labels, wider for long ones
+const List<double> _kPillWs = [66.0, 78.0, 68.0, 78.0, 66.0];
+const double _kPillH        = 50.0;
 const double _kPillTop    = 6.0;
 const double _kIconSize   = 24.0;
 const double _kLabelSize  = 11.0;
@@ -68,7 +69,7 @@ const double _kSlotW      = 37.0;
 const double _kSlotH      = 46.0;
 
 /// Left edge of the pill for each tab index
-const List<double> _kPillX = [6.0, 63.0, 130.0, 197.0, 264.0];
+const List<double> _kPillX = [6.0, 63.0, 137.0, 197.0, 272.0];
 
 /// Left edge of each slot for each tab index
 const List<double> _kSlotX = [17.0, 85.0, 152.0, 219.0, 286.0];
@@ -121,6 +122,8 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
   int    _activeIdx      = 0;
   double _pillX          = _kPillX[0];
   double _prevPillX      = _kPillX[0];
+  double _pillW          = _kPillWs[0];   // animated pill width
+  double _targetPillW    = _kPillWs[0];
   double _velocity       = 0.0;   // pixels/second, used for pill stretch
 
   // ── Drag state ──────────────────────────────────────────────────────────────
@@ -133,9 +136,11 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
   @override
   void initState() {
     super.initState();
-    _activeIdx = widget.initialIndex.clamp(0, widget.tabs.length - 1);
-    _pillX     = _kPillX[_activeIdx];
-    _prevPillX = _pillX;
+    _activeIdx    = widget.initialIndex.clamp(0, widget.tabs.length - 1);
+    _pillX        = _kPillX[_activeIdx];
+    _prevPillX    = _pillX;
+    _pillW        = _kPillWs[_activeIdx];
+    _targetPillW  = _pillW;
 
     _ctrl = AnimationController.unbounded(vsync: this)
       ..addListener(_onAnimation);
@@ -143,10 +148,12 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
 
   void _onAnimation() {
     final newX = _ctrl.value;
-    // Derive velocity from frame delta (~60 fps assumed by AnimationController).
     _velocity  = (newX - _prevPillX) * 60.0;
     _prevPillX = _pillX;
-    setState(() => _pillX = newX);
+    setState(() {
+      _pillX = newX;
+      _pillW += (_targetPillW - _pillW) * 0.12;
+    });
   }
 
   @override
@@ -160,7 +167,10 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
   // ── Spring navigation ────────────────────────────────────────────────────────
 
   void _springTo(int idx) {
-    setState(() => _activeIdx = idx);
+    setState(() {
+      _activeIdx   = idx;
+      _targetPillW = _kPillWs[idx];
+    });
     widget.onTabChanged?.call(idx);
     _ctrl.animateWith(
       SpringSimulation(_kSpring, _pillX, _kPillX[idx], _velocity),
@@ -169,12 +179,15 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
 
   // ── Drag helpers ─────────────────────────────────────────────────────────────
 
+  // Compare pill centre against fixed slot centres (slot left + 18.5)
+  static const List<double> _kSlotCX = [35.5, 103.5, 170.5, 237.5, 304.5];
+
   int _nearestTab(double pillLeft) {
-    final cx      = pillLeft + _kPillW / 2;
-    int    best   = 0;
-    double bestD  = double.infinity;
-    for (int i = 0; i < _kPillX.length; i++) {
-      final d = (_kPillX[i] + _kPillW / 2 - cx).abs();
+    final cx     = pillLeft + _pillW / 2;
+    int    best  = 0;
+    double bestD = double.infinity;
+    for (int i = 0; i < _kSlotCX.length; i++) {
+      final d = (_kSlotCX[i] - cx).abs();
       if (d < bestD) { bestD = d; best = i; }
     }
     return best;
@@ -196,6 +209,7 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
   @override
   Widget build(BuildContext context) {
     final (sX, sY) = _stretch;
+    final pillW    = _pillW;
 
     return GestureDetector(
       onHorizontalDragStart:  _onDragStart,
@@ -212,7 +226,7 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  _Pill(x: _pillX, scaleX: sX, scaleY: sY),
+                  _Pill(x: _pillX, w: pillW, scaleX: sX, scaleY: sY),
                   for (int i = 0; i < widget.tabs.length; i++)
                     _Slot(
                       tab:      widget.tabs[i],
@@ -248,11 +262,14 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
     _dragVelocity  = delta * 60.0;
     _totalDragDist += delta.abs();
     final newX = (_dragStartPillX + (d.globalPosition.dx - _dragStartGX))
-        .clamp(6.0, 264.0);
+        .clamp(6.0, 272.0);
+    final nearIdx = _nearestTab(newX);
     setState(() {
-      _pillX     = newX;
-      _velocity  = _dragVelocity * 0.4;
-      _activeIdx = _nearestTab(newX);
+      _pillX       = newX;
+      _velocity    = _dragVelocity * 0.4;
+      _activeIdx   = nearIdx;
+      _targetPillW = _kPillWs[nearIdx];
+      _pillW      += (_targetPillW - _pillW) * 0.15;
     });
   }
 
@@ -303,10 +320,11 @@ class _NavContainer extends StatelessWidget {
 /// Squash-and-stretch frosted-glass active indicator pill.
 class _Pill extends StatelessWidget {
   final double x;
+  final double w;
   final double scaleX;
   final double scaleY;
 
-  const _Pill({required this.x, required this.scaleX, required this.scaleY});
+  const _Pill({required this.x, required this.w, required this.scaleX, required this.scaleY});
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +339,7 @@ class _Pill extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
             child: Container(
-              width:  _kPillW,
+              width:  w,
               height: _kPillH,
               decoration: BoxDecoration(
                 color:        _kPillFill.withOpacity(0.5),

@@ -101,7 +101,7 @@
       position: absolute;
       top: 6px;
       left: 6px;
-      width: 78px;
+      width: 66px;
       height: 50px;
       border-radius: 100px;
       background: rgba(163,182,203,0.5);
@@ -225,8 +225,10 @@
 </div>
 
 <script>
-  // Pill left-edge positions (pill width=68px, centred over each icon slot)
-  const PILL_POS = { home:6, attendance:63, payroll:130, reimburse:197, menu:264 };
+  // Figma-exact pill positions and widths per tab (node 39383-67709, 39392-68022)
+  const PILL_POS   = { home:6,    attendance:63,    payroll:137,  reimburse:197,  menu:272  };
+  const PILL_WIDTH = { home:66,   attendance:78,    payroll:68,   reimburse:78,   menu:66   };
+  const SLOT_CX    = { home:35.5, attendance:103.5, payroll:170.5,reimburse:237.5,menu:304.5 };
   const TABS = ['home','attendance','payroll','reimburse','menu'];
 
   const pill  = document.getElementById('activePill');
@@ -235,6 +237,7 @@
 
   const STIFFNESS = 320, DAMPING = 34;
   let px = PILL_POS.home, pvx = 0, tx = PILL_POS.home;
+  let pw = PILL_WIDTH.home, tw_w = PILL_WIDTH.home;
   let rafId = null, lastT = null;
   let isDragging = false, dragStartCX = 0, dragStartPX = 0;
   let dragVel = 0, lastDragCX = 0, lastDragT = 0, totalDragDist = 0;
@@ -243,7 +246,7 @@
     slots.forEach(s => s.classList.toggle('active', s.dataset.tab === tab));
   }
 
-  function applyPill(left, vel, distDx) {
+  function applyPill(left, w, vel, distDx) {
     const dStretch = Math.min(Math.abs(distDx) * 0.010, 1.0);
     const vStretch = Math.min(Math.abs(vel)    * 0.002, 0.45);
     const sX = 1 + dStretch + vStretch;
@@ -251,6 +254,7 @@
 
     pill.style.transformOrigin = '50% 50%';
     pill.style.left      = left + 'px';
+    pill.style.width     = w + 'px';
     pill.style.transform = `scaleX(${sX.toFixed(4)}) scaleY(${sY.toFixed(4)})`;
   }
 
@@ -261,12 +265,13 @@
     const dx = px - tx;
     pvx += (-STIFFNESS * dx - DAMPING * pvx) * dt;
     px  += pvx * dt;
+    pw  += (tw_w - pw) * Math.min(dt * 10, 1);
 
-    applyPill(px, pvx, dx);
+    applyPill(px, pw, pvx, dx);
 
     if (Math.abs(dx) < 0.15 && Math.abs(pvx) < 0.5) {
-      px = tx; pvx = 0;
-      applyPill(tx, 0, 0);
+      px = tx; pvx = 0; pw = tw_w;
+      applyPill(tx, tw_w, 0, 0);
       pill.style.zIndex = '0';
       rafId = null;
       return;
@@ -275,16 +280,15 @@
   }
 
   function nearestTab(left) {
-    const cx = left + 34;
-    return TABS.reduce((best, tab) => {
-      const bc = PILL_POS[best] + 39;
-      const tc = PILL_POS[tab]  + 39;
-      return Math.abs(tc - cx) < Math.abs(bc - cx) ? tab : best;
-    });
+    const cx = left + pw / 2;
+    return TABS.reduce((best, tab) =>
+      Math.abs(SLOT_CX[tab] - cx) < Math.abs(SLOT_CX[best] - cx) ? tab : best
+    );
   }
 
   function springTo(tab) {
-    tx = PILL_POS[tab];
+    tx   = PILL_POS[tab];
+    tw_w = PILL_WIDTH[tab];
     setActive(tab);
     pill.style.zIndex = '0';
     if (!rafId) { lastT = null; rafId = requestAnimationFrame(tick); }
@@ -311,9 +315,12 @@
     lastDragCX    = e.clientX;
     lastDragT     = now;
     totalDragDist += Math.abs(ddx);
-    px = Math.max(6, Math.min(264, dragStartPX + (e.clientX - dragStartCX)));
-    setActive(nearestTab(px));
-    applyPill(px, dragVel * 0.4, 0);
+    px = Math.max(6, Math.min(272, dragStartPX + (e.clientX - dragStartCX)));
+    const nearTab = nearestTab(px);
+    tw_w = PILL_WIDTH[nearTab];
+    pw  += (tw_w - pw) * 0.15;
+    setActive(nearTab);
+    applyPill(px, pw, dragVel * 0.4, 0);
   }, { passive: true });
 
   function endDrag() {
@@ -322,8 +329,9 @@
     if (totalDragDist <= 6) return;
     const snap = nearestTab(px);
     setActive(snap);
-    tx  = PILL_POS[snap];
-    pvx = dragVel * 1.8;
+    tx   = PILL_POS[snap];
+    tw_w = PILL_WIDTH[snap];
+    pvx  = dragVel * 1.8;
     lastT = null;
     rafId = requestAnimationFrame(tick);
   }
