@@ -101,7 +101,7 @@
       position: absolute;
       top: 6px;
       left: 6px;
-      width: 68px;
+      width: 78px;
       height: 50px;
       border-radius: 100px;
       background: rgba(163,182,203,0.5);
@@ -226,7 +226,7 @@
 
 <script>
   // Pill left-edge positions (pill width=68px, centred over each icon slot)
-  const PILL_POS = { home:6, attendance:70, payroll:137, reimburse:204, menu:271 };
+  const PILL_POS = { home:6, attendance:63, payroll:130, reimburse:197, menu:264 };
   const TABS = ['home','attendance','payroll','reimburse','menu'];
 
   const pill  = document.getElementById('activePill');
@@ -277,8 +277,8 @@
   function nearestTab(left) {
     const cx = left + 34;
     return TABS.reduce((best, tab) => {
-      const bc = PILL_POS[best] + 34;
-      const tc = PILL_POS[tab]  + 34;
+      const bc = PILL_POS[best] + 39;
+      const tc = PILL_POS[tab]  + 39;
       return Math.abs(tc - cx) < Math.abs(bc - cx) ? tab : best;
     });
   }
@@ -311,7 +311,7 @@
     lastDragCX    = e.clientX;
     lastDragT     = now;
     totalDragDist += Math.abs(ddx);
-    px = Math.max(6, Math.min(271, dragStartPX + (e.clientX - dragStartCX)));
+    px = Math.max(6, Math.min(264, dragStartPX + (e.clientX - dragStartCX)));
     setActive(nearestTab(px));
     applyPill(px, dragVel * 0.4, 0);
   }, { passive: true });

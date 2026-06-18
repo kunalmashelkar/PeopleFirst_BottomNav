@@ -57,7 +57,7 @@ const List<NavTab> kPeopleFirstTabs = [
 const double _kNavWidth   = 344.0;
 const double _kNavHeight  = 62.0;
 const double _kNavRadius  = 80.0;
-const double _kPillW      = 68.0;
+const double _kPillW      = 78.0;
 const double _kPillH      = 50.0;
 const double _kPillTop    = 6.0;
 const double _kIconSize   = 24.0;
@@ -68,7 +68,7 @@ const double _kSlotW      = 37.0;
 const double _kSlotH      = 46.0;
 
 /// Left edge of the pill for each tab index
-const List<double> _kPillX = [6.0, 70.0, 137.0, 204.0, 271.0];
+const List<double> _kPillX = [6.0, 63.0, 130.0, 197.0, 264.0];
 
 /// Left edge of each slot for each tab index
 const List<double> _kSlotX = [17.0, 85.0, 152.0, 219.0, 286.0];
@@ -248,7 +248,7 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
     _dragVelocity  = delta * 60.0;
     _totalDragDist += delta.abs();
     final newX = (_dragStartPillX + (d.globalPosition.dx - _dragStartGX))
-        .clamp(6.0, 271.0);
+        .clamp(6.0, 264.0);
     setState(() {
       _pillX     = newX;
       _velocity  = _dragVelocity * 0.4;
