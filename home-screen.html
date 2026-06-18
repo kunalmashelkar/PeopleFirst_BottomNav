@@ -130,7 +130,7 @@
       -webkit-tap-highlight-color: transparent;
       z-index: 1;
     }
-    .nav-slot[data-tab="home"]       { left: 17px; }
+    .nav-slot[data-tab="home"]       { left: 20px; }
     .nav-slot[data-tab="attendance"] { left: 85px; }
     .nav-slot[data-tab="payroll"]    { left: 152px; }
     .nav-slot[data-tab="reimburse"]  { left: 219px; }
@@ -226,9 +226,9 @@
 
 <script>
   // Figma-exact pill positions and widths per tab (node 39383-67709, 39392-68022)
-  const PILL_POS   = { home:3,    attendance:63,    payroll:137,  reimburse:197,  menu:272  };
-  const PILL_WIDTH = { home:66,   attendance:78,    payroll:68,   reimburse:78,   menu:66   };
-  const SLOT_CX    = { home:35.5, attendance:103.5, payroll:170.5,reimburse:237.5,menu:304.5 };
+  const PILL_POS   = { home:6,  attendance:63,    payroll:137,  reimburse:197,  menu:272   };
+  const PILL_WIDTH = { home:66, attendance:78,    payroll:68,   reimburse:78,   menu:66    };
+  const SLOT_CX    = { home:39, attendance:103.5, payroll:170.5,reimburse:237.5,menu:304.5 };
   const TABS = ['home','attendance','payroll','reimburse','menu'];
 
   const pill  = document.getElementById('activePill');

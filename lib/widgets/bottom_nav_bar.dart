@@ -69,10 +69,10 @@ const double _kSlotW      = 37.0;
 const double _kSlotH      = 46.0;
 
 /// Left edge of the pill for each tab index
-const List<double> _kPillX = [3.0, 63.0, 137.0, 197.0, 272.0];
+const List<double> _kPillX = [6.0, 63.0, 137.0, 197.0, 272.0];
 
 /// Left edge of each slot for each tab index
-const List<double> _kSlotX = [17.0, 85.0, 152.0, 219.0, 286.0];
+const List<double> _kSlotX = [20.0, 85.0, 152.0, 219.0, 286.0];
 
 // ── Colors ────────────────────────────────────────────────────────────────────
 
@@ -180,7 +180,7 @@ class _PeopleFirstBottomNavState extends State<PeopleFirstBottomNav>
   // ── Drag helpers ─────────────────────────────────────────────────────────────
 
   // Compare pill centre against fixed slot centres (slot left + 18.5)
-  static const List<double> _kSlotCX = [35.5, 103.5, 170.5, 237.5, 304.5];
+  static const List<double> _kSlotCX = [39.0, 103.5, 170.5, 237.5, 304.5];
 
   int _nearestTab(double pillLeft) {
     final cx     = pillLeft + _pillW / 2;
